@@ -13,7 +13,10 @@ import {
   User,
   Sparkles,
   X,
+  Trash2,
 } from "lucide-react";
+
+const STORAGE_KEY = "chat_history";
 
 export default function FloatingChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,6 +25,31 @@ export default function FloatingChatWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Load chat history from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Convert timestamp strings back to Date objects
+        const messagesWithDates = parsed.map((msg: ChatMessage) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp),
+        }));
+        setMessages(messagesWithDates);
+      } catch (e) {
+        console.error("Failed to parse chat history:", e);
+      }
+    }
+  }, []);
+
+  // Save chat history to localStorage whenever messages change
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    }
+  }, [messages]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -29,6 +57,11 @@ export default function FloatingChatWidget() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const handleClearChat = () => {
+    setMessages([]);
+    localStorage.removeItem(STORAGE_KEY);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,14 +143,27 @@ export default function FloatingChatWidget() {
                 <p className="text-xs text-primary-foreground/70">Ask about your tasks</p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsOpen(false)}
-              className="h-8 w-8 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground"
-            >
-              <X className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-1">
+              {messages.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleClearChat}
+                  className="h-8 w-8 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground"
+                  title="Clear chat"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsOpen(false)}
+                className="h-8 w-8 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
 
           {/* Messages Area */}
