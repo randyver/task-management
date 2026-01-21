@@ -1,0 +1,685 @@
+{
+    "info": {
+        "name": "Task Management API",
+        "description": "API collection for the Task Management Application with JWT authentication and AI chatbot.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8000",
+            "type": "string"
+        },
+        {
+            "key": "token",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Login (JSON)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.collectionVariables.set('token', jsonData.access_token);",
+                                    "    pm.test('Login successful', function() {",
+                                    "        pm.expect(jsonData.access_token).to.be.a('string');",
+                                    "        pm.expect(jsonData.token_type).to.equal('bearer');",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/login/json",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "login",
+                                "json"
+                            ]
+                        },
+                        "description": "Login with username and password to get JWT token."
+                    },
+                    "response": [
+                        {
+                            "name": "Successful Login",
+                            "status": "OK",
+                            "code": 200,
+                            "body": "{\n    \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"token_type\": \"bearer\"\n}"
+                        },
+                        {
+                            "name": "Invalid Credentials",
+                            "status": "Unauthorized",
+                            "code": 401,
+                            "body": "{\n    \"detail\": \"Incorrect username or password\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Login (Form)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.collectionVariables.set('token', jsonData.access_token);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/x-www-form-urlencoded"
+                            }
+                        ],
+                        "body": {
+                            "mode": "urlencoded",
+                            "urlencoded": [
+                                {
+                                    "key": "username",
+                                    "value": "admin",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "password",
+                                    "value": "password123",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Login with OAuth2 form to get JWT token."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Current User",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/me",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "me"
+                            ]
+                        },
+                        "description": "Get the currently authenticated user's information."
+                    },
+                    "response": [
+                        {
+                            "name": "Current User",
+                            "status": "OK",
+                            "code": 200,
+                            "body": "{\n    \"id\": 1,\n    \"username\": \"admin\",\n    \"email\": \"admin@example.com\",\n    \"full_name\": \"Admin User\",\n    \"created_at\": \"2024-01-21T10:00:00Z\",\n    \"updated_at\": \"2024-01-21T10:00:00Z\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/logout",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "logout"
+                            ]
+                        },
+                        "description": "Logout the current user."
+                    },
+                    "response": [
+                        {
+                            "name": "Logout Success",
+                            "status": "OK",
+                            "code": 200,
+                            "body": "{\n    \"message\": \"Successfully logged out\"\n}"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Users",
+            "item": [
+                {
+                    "name": "Get All Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/users",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users"
+                            ]
+                        },
+                        "description": "Get list of all users (for assignee dropdown)."
+                    },
+                    "response": [
+                        {
+                            "name": "User List",
+                            "status": "OK",
+                            "code": 200,
+                            "body": "[\n    {\n        \"id\": 1,\n        \"username\": \"admin\",\n        \"full_name\": \"Admin User\"\n    },\n    {\n        \"id\": 2,\n        \"username\": \"john\",\n        \"full_name\": \"John Doe\"\n    }\n]"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get User by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/users/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "1"
+                            ]
+                        },
+                        "description": "Get a specific user by their ID."
+                    },
+                    "response": [
+                        {
+                            "name": "User Details",
+                            "status": "OK",
+                            "code": 200,
+                            "body": "{\n    \"id\": 1,\n    \"username\": \"admin\",\n    \"email\": \"admin@example.com\",\n    \"full_name\": \"Admin User\",\n    \"created_at\": \"2024-01-21T10:00:00Z\",\n    \"updated_at\": \"2024-01-21T10:00:00Z\"\n}"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Tasks",
+            "item": [
+                {
+                    "name": "Get All Tasks",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/tasks?page=1&page_size=10",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "tasks"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "page_size",
+                                    "value": "10"
+                                }
+                            ]
+                        },
+                        "description": "Get all tasks with optional filtering and pagination."
+                    },
+                    "response": [
+                        {
+                            "name": "Task List",
+                            "status": "OK",
+                            "code": 200,
+                            "body": "{\n    \"tasks\": [\n        {\n            \"id\": 1,\n            \"title\": \"Complete API documentation\",\n            \"description\": \"Write comprehensive API docs\",\n            \"status\": \"in_progress\",\n            \"deadline\": \"2024-01-28\",\n            \"assignee_id\": 2,\n            \"assignee\": {\n                \"id\": 2,\n                \"username\": \"john\",\n                \"full_name\": \"John Doe\"\n            },\n            \"created_by\": 1,\n            \"creator\": {\n                \"id\": 1,\n                \"username\": \"admin\",\n                \"full_name\": \"Admin User\"\n            },\n            \"created_at\": \"2024-01-21T10:00:00Z\",\n            \"updated_at\": \"2024-01-21T10:00:00Z\"\n        }\n    ],\n    \"total\": 5,\n    \"page\": 1,\n    \"page_size\": 10\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Tasks by Status",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/tasks?status=todo",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "tasks"
+                            ],
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "todo",
+                                    "description": "Filter by status: todo, in_progress, done"
+                                }
+                            ]
+                        },
+                        "description": "Get tasks filtered by status."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Task by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/tasks/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "tasks",
+                                "1"
+                            ]
+                        },
+                        "description": "Get a specific task by its ID."
+                    },
+                    "response": [
+                        {
+                            "name": "Task Details",
+                            "status": "OK",
+                            "code": 200,
+                            "body": "{\n    \"id\": 1,\n    \"title\": \"Complete API documentation\",\n    \"description\": \"Write comprehensive API docs\",\n    \"status\": \"in_progress\",\n    \"deadline\": \"2024-01-28\",\n    \"assignee_id\": 2,\n    \"assignee\": {\n        \"id\": 2,\n        \"username\": \"john\",\n        \"full_name\": \"John Doe\"\n    },\n    \"created_by\": 1,\n    \"creator\": {\n        \"id\": 1,\n        \"username\": \"admin\",\n        \"full_name\": \"Admin User\"\n    },\n    \"created_at\": \"2024-01-21T10:00:00Z\",\n    \"updated_at\": \"2024-01-21T10:00:00Z\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Create Task",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"New Task\",\n    \"description\": \"This is a new task description\",\n    \"status\": \"todo\",\n    \"deadline\": \"2024-02-01\",\n    \"assignee_id\": 2\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/tasks",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "tasks"
+                            ]
+                        },
+                        "description": "Create a new task."
+                    },
+                    "response": [
+                        {
+                            "name": "Task Created",
+                            "status": "Created",
+                            "code": 201,
+                            "body": "{\n    \"id\": 6,\n    \"title\": \"New Task\",\n    \"description\": \"This is a new task description\",\n    \"status\": \"todo\",\n    \"deadline\": \"2024-02-01\",\n    \"assignee_id\": 2,\n    \"assignee\": {\n        \"id\": 2,\n        \"username\": \"john\",\n        \"full_name\": \"John Doe\"\n    },\n    \"created_by\": 1,\n    \"creator\": {\n        \"id\": 1,\n        \"username\": \"admin\",\n        \"full_name\": \"Admin User\"\n    },\n    \"created_at\": \"2024-01-21T12:00:00Z\",\n    \"updated_at\": \"2024-01-21T12:00:00Z\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Task",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"Updated Task Title\",\n    \"description\": \"Updated description\",\n    \"status\": \"in_progress\",\n    \"deadline\": \"2024-02-15\",\n    \"assignee_id\": 3\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/tasks/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "tasks",
+                                "1"
+                            ]
+                        },
+                        "description": "Update an existing task."
+                    },
+                    "response": [
+                        {
+                            "name": "Task Updated",
+                            "status": "OK",
+                            "code": 200,
+                            "body": "{\n    \"id\": 1,\n    \"title\": \"Updated Task Title\",\n    \"description\": \"Updated description\",\n    \"status\": \"in_progress\",\n    \"deadline\": \"2024-02-15\",\n    \"assignee_id\": 3,\n    \"assignee\": {\n        \"id\": 3,\n        \"username\": \"jane\",\n        \"full_name\": \"Jane Smith\"\n    },\n    \"created_by\": 1,\n    \"creator\": {\n        \"id\": 1,\n        \"username\": \"admin\",\n        \"full_name\": \"Admin User\"\n    },\n    \"created_at\": \"2024-01-21T10:00:00Z\",\n    \"updated_at\": \"2024-01-21T14:00:00Z\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Task Status",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"status\": \"done\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/tasks/1/status",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "tasks",
+                                "1",
+                                "status"
+                            ]
+                        },
+                        "description": "Update only the status of a task."
+                    },
+                    "response": [
+                        {
+                            "name": "Status Updated",
+                            "status": "OK",
+                            "code": 200,
+                            "body": "{\n    \"id\": 1,\n    \"title\": \"Complete API documentation\",\n    \"status\": \"done\",\n    ...\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete Task",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/tasks/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "tasks",
+                                "1"
+                            ]
+                        },
+                        "description": "Delete a task."
+                    },
+                    "response": [
+                        {
+                            "name": "Task Deleted",
+                            "status": "No Content",
+                            "code": 204,
+                            "body": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Chatbot",
+            "item": [
+                {
+                    "name": "Query Chatbot - Incomplete Tasks",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"message\": \"Show all tasks that are not completed\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/chatbot/query",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "chatbot",
+                                "query"
+                            ]
+                        },
+                        "description": "Ask the AI chatbot about incomplete tasks."
+                    },
+                    "response": [
+                        {
+                            "name": "Chatbot Response",
+                            "status": "OK",
+                            "code": 200,
+                            "body": "{\n    \"response\": \"Here are the tasks that are not completed:\\n\\n1. **Complete API documentation** - Status: In Progress, Deadline: Jan 28, 2024, Assignee: John Doe\\n2. **Fix login bug** - Status: Todo, Deadline: Jan 24, 2024, Assignee: Jane Smith\\n3. **Database optimization** - Status: Todo, Deadline: Today, Assignee: Jane Smith\",\n    \"success\": true,\n    \"error\": null\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Query Chatbot - Task Count",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"message\": \"How many completed tasks are there?\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/chatbot/query",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "chatbot",
+                                "query"
+                            ]
+                        },
+                        "description": "Ask about completed task count."
+                    },
+                    "response": [
+                        {
+                            "name": "Count Response",
+                            "status": "OK",
+                            "code": 200,
+                            "body": "{\n    \"response\": \"There is 1 completed task in the system:\\n\\n- **Setup CI/CD pipeline** - Completed on Jan 19, 2024, was assigned to John Doe\",\n    \"success\": true,\n    \"error\": null\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Query Chatbot - Today's Deadlines",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"message\": \"Which tasks have deadlines today?\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/chatbot/query",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "chatbot",
+                                "query"
+                            ]
+                        },
+                        "description": "Ask about tasks due today."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Query Chatbot - Task Assignee",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"message\": \"Who is the assignee of task 'Complete API documentation'?\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/chatbot/query",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "chatbot",
+                                "query"
+                            ]
+                        },
+                        "description": "Ask about a specific task's assignee."
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ]
+}
