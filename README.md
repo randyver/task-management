@@ -188,7 +188,7 @@ The AI chatbot is powered by Google Gemini and can answer questions about your t
 
 ### ERD (Entity Relationship Diagram)
 
-![ERD](docs/erd.png)
+<img src="docs/erd.png" alt="ERD" width="500">
 
 ## Postman Collection
 
