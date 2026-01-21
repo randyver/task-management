@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Task, UserSimple, TaskStatus } from "@/types";
 import { createTask, updateTask } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -51,20 +51,19 @@ export default function TaskFormDialog({
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Reset form when dialog opens/closes or task changes
-  const resetForm = () => {
-    setTitle(task?.title || "");
-    setDescription(task?.description || "");
-    setStatus(task?.status || "todo");
-    setDeadline(task?.deadline || "");
-    setAssigneeId(task?.assignee_id?.toString() || "unassigned");
-    setError("");
-  };
+  // Update form when task prop changes or dialog opens
+  useEffect(() => {
+    if (open) {
+      setTitle(task?.title || "");
+      setDescription(task?.description || "");
+      setStatus(task?.status || "todo");
+      setDeadline(task?.deadline || "");
+      setAssigneeId(task?.assignee_id?.toString() || "unassigned");
+      setError("");
+    }
+  }, [open, task]);
 
   const handleOpenChange = (isOpen: boolean) => {
-    if (isOpen) {
-      resetForm();
-    }
     if (!isOpen) {
       onClose();
     }
